@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digiroad — Call Center SOP & Customer Service Dashboard</title>
+<style>
+  :root{
+    --red:#C8102E; --red-dark:#9c0c23; --red-light:#fdecef;
+    --dark:#1a1a1a; --grey:#595959; --grey-light:#f2f2f2; --border:#e2e2e2;
+    --green:#1e8e5a; --amber:#b5750a; --blue:#1d5fb5;
+    --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f7f7f8;color:var(--dark);}
+  a{color:inherit;}
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{width:270px;flex-shrink:0;background:var(--dark);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .brand{padding:22px 20px 14px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .brand .logo{font-size:22px;font-weight:800;color:#fff;letter-spacing:.5px;}
+  .brand .logo span{color:var(--red);}
+  .brand .sub{font-size:11.5px;color:#b7b7b7;margin-top:4px;line-height:1.4;}
+  .nav{padding:10px 10px 20px;flex:1;}
+  .nav-group-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#8a8a8a;margin:16px 10px 6px;font-weight:700;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:#d8d8d8;margin-bottom:2px;transition:.12s;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:var(--red);color:#fff;font-weight:600;}
+  .nav-item .ic{width:18px;text-align:center;flex-shrink:0;font-size:14px;}
+  .sidebar-foot{padding:14px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:10.5px;color:#8a8a8a;line-height:1.5;}
+
+  /* Main */
+  .main{flex:1;min-width:0;}
+  .topbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:16px;}
+  .topbar h1{font-size:17px;margin:0;font-weight:700;flex-shrink:0;}
+  .search-wrap{flex:1;max-width:440px;position:relative;margin-left:auto;}
+  .search-wrap input{width:100%;padding:9px 14px 9px 34px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;outline:none;background:var(--grey-light);}
+  .search-wrap input:focus{border-color:var(--red);background:#fff;}
+  .search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--grey);font-size:13px;}
+  .search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);max-height:420px;overflow-y:auto;display:none;z-index:30;}
+  .search-results.show{display:block;}
+  .sr-item{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .sr-item:last-child{border-bottom:none;}
+  .sr-item:hover{background:var(--red-light);}
+  .sr-tag{display:inline-block;font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:3px;}
+  .sr-q{font-size:13px;font-weight:600;color:var(--dark);}
+  .sr-a{font-size:12px;color:var(--grey);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .sr-empty{padding:16px;font-size:13px;color:var(--grey);text-align:center;}
+
+  .content{padding:26px 28px 60px;max-width:1180px;}
+  .section{display:none;}
+  .section.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  h2.title{font-size:22px;margin:0 0 6px;font-weight:800;}
+  p.desc{color:var(--grey);font-size:13.5px;margin:0 0 22px;max-width:820px;line-height:1.6;}
+  h3.h{font-size:15.5px;font-weight:700;margin:26px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--red);}
+  h4.hs{font-size:13.5px;font-weight:700;margin:16px 0 8px;color:var(--dark);}
+
+  /* Cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:10px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .card .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--grey);font-weight:700;margin-bottom:6px;}
+  .card .v{font-size:22px;font-weight:800;color:var(--dark);}
+  .card .v small{font-size:12px;font-weight:600;color:var(--grey);}
+  .card .foot{font-size:11.5px;color:var(--green);margin-top:4px;font-weight:600;}
+  .card.accent{border-left:4px solid var(--red);}
+
+  .banner{background:linear-gradient(135deg,var(--red),#e0334f);color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+  .banner .bt{font-size:17px;font-weight:800;margin-bottom:4px;}
+  .banner .bd{font-size:13px;opacity:.95;max-width:600px;line-height:1.5;}
+  .banner .bp{background:rgba(255,255,255,.18);border-radius:8px;padding:10px 16px;font-size:12.5px;font-weight:600;white-space:nowrap;}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:6px;}
+  th{background:var(--dark);color:#fff;text-align:left;padding:10px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  td{padding:10px 14px;font-size:13px;border-top:1px solid var(--border);line-height:1.5;}
+  tr:nth-child(even) td{background:var(--grey-light);}
+  .table-wrap{overflow-x:auto;margin-bottom:18px;}
+
+  ul.bl{margin:0 0 14px;padding-left:20px;}
+  ul.bl li{margin-bottom:7px;font-size:13.5px;line-height:1.55;}
+  ol.nl{margin:0 0 14px;padding-left:20px;}
+  ol.nl li{margin-bottom:7px;font-size:13.5px;line-height:1.55;}
+  p.body-text{font-size:13.5px;line-height:1.65;margin:0 0 12px;}
+
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge.b2c{background:#e7f3ff;color:var(--blue);}
+  .badge.b2b{background:#fff3e0;color:var(--amber);}
+  .badge.do{background:#e7f7ee;color:var(--green);}
+  .badge.dont{background:var(--red-light);color:var(--red);}
+
+  /* Template boxes */
+  .tpl{background:var(--grey-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;position:relative;}
+  .tpl .tpl-title{font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--dark);}
+  .tpl .tpl-body{font-size:13px;line-height:1.7;white-space:pre-wrap;color:#333;font-family:Consolas,Menlo,monospace;}
+  .copy-btn{position:absolute;top:12px;right:12px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11.5px;cursor:pointer;font-weight:600;color:var(--dark);}
+  .copy-btn:hover{border-color:var(--red);color:var(--red);}
+  .copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green);}
+
+  /* FAQ accordion */
+  .faq-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .chip{border:1px solid var(--border);background:#fff;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;color:var(--grey);}
+  .chip.active{background:var(--dark);color:#fff;border-color:var(--dark);}
+  .faq-item{background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+  .faq-q{padding:12px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .faq-q:hover{background:var(--grey-light);}
+  .faq-q .arrow{transition:.15s;flex-shrink:0;color:var(--red);font-size:12px;}
+  .faq-item.open .arrow{transform:rotate(180deg);}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .18s ease;font-size:13px;color:#333;line-height:1.6;}
+  .faq-item.open .faq-a{max-height:300px;}
+  .faq-a-inner{padding:0 16px 14px;}
+  .faq-count{font-size:12px;color:var(--grey);margin-bottom:12px;}
+
+  /* Tabs (channel SOP) */
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:18px;flex-wrap:wrap;}
+  .tab-btn{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--grey);border-bottom:2px solid transparent;margin-bottom:-2px;}
+  .tab-btn.active{color:var(--red);border-color:var(--red);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* Flow steps */
+  .flow{display:flex;flex-direction:column;align-items:center;margin:14px 0 22px;}
+  .flow-step{background:#fff;border:1.5px solid var(--red);color:var(--dark);font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;text-align:center;box-shadow:var(--shadow);}
+  .flow-arrow{color:var(--red);font-size:18px;line-height:1;margin:2px 0;}
+
+  /* Decision tree */
+  .dtree{background:#0f1115;color:#d7f5df;font-family:Consolas,Menlo,monospace;font-size:12.5px;line-height:1.55;border-radius:var(--radius);padding:20px 24px;overflow-x:auto;white-space:pre;margin-bottom:20px;}
+
+  /* Scenario chat */
+  .scenario-controls{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .scenario-controls select,.scenario-controls input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;}
+  .scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:20px;}
+  .scenario-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;font-size:12.5px;font-weight:600;box-shadow:var(--shadow);}
+  .scenario-card:hover{border-color:var(--red);}
+  .scenario-card .n{color:var(--red);font-weight:800;margin-right:4px;}
+  .chatbox{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:20px;}
+  .chatbox h4{margin:0 0 14px;font-size:14.5px;}
+  .bubble{max-width:78%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:8px;}
+  .bubble.customer{background:var(--grey-light);border-bottom-left-radius:2px;margin-right:auto;}
+  .bubble.cs{background:var(--red);color:#fff;border-bottom-right-radius:2px;margin-left:auto;}
+  .bubble .who{font-size:10px;font-weight:700;text-transform:uppercase;opacity:.7;margin-bottom:3px;}
+
+  /* KPI gauges */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:10px;}
+  .gauge-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .gauge-card .gk{font-size:12.5px;font-weight:700;margin-bottom:10px;}
+  .bar-bg{background:var(--grey-light);border-radius:20px;height:10px;overflow:hidden;}
+  .bar-fill{background:var(--red);height:100%;border-radius:20px;}
+  .gauge-card .gt{font-size:11.5px;color:var(--grey);margin-top:8px;}
+
+  .footnote{font-size:11.5px;color:var(--grey);font-style:italic;margin:6px 0 16px;}
+  .pillbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .pillbar .pill{background:#fff;border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;}
+
+  @media (max-width:880px){
+    .sidebar{position:fixed;left:-280px;z-index:50;transition:.2s;}
+    .sidebar.open{left:0;}
+    .menu-btn{display:inline-flex!important;}
+    .content{padding:18px 16px 60px;}
+    .topbar{padding:12px 16px;}
+  }
+  .menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--dark);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">DIGI<span>ROAD</span></div>
+      <div class="sub">Call Center SOP & Customer Service Dashboard<br>by Atlas Indonesia · v1.0</div>
+    </div>
+    <nav class="nav" id="navList"></nav>
+    <div class="sidebar-foot">Dokumen internal — rahasia perusahaan. Dilarang menyebarluaskan tanpa izin manajemen.</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <h1 id="pageTitle">Overview</h1>
+      <div class="search-wrap">
+        <span class="si">🔍</span>
+        <input type="text" id="searchInput" placeholder="Cari FAQ, harga, SOP, template...">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+
+const NAV = [
+  {group:"Dashboard", items:[
+    {id:"overview", label:"Overview", icon:"🏠"},
+  ]},
+  {group:"Knowledge", items:[
+    {id:"campaign", label:"Campaign & Harga", icon:"💸"},
+    {id:"product", label:"Product Knowledge", icon:"🔧"},
+  ]},
+  {group:"Operasional", items:[
+    {id:"screening", label:"Customer Screening", icon:"🧭"},
+    {id:"channels", label:"SOP per Channel", icon:"💬"},
+    {id:"verification", label:"Verifikasi & Poster", icon:"✅"},
+  ]},
+  {group:"Referensi Cepat", items:[
+    {id:"faq", label:"FAQ", icon:"❓"},
+    {id:"templates", label:"Template Jawaban", icon:"📋"},
+    {id:"donts", label:"Do & Don't", icon:"⚖️"},
+  ]},
+  {group:"Manajemen", items:[
+    {id:"escalation", label:"Escalation Matrix", icon:"🚨"},
+    {id:"kpi", label:"KPI", icon:"📊"},
+  ]},
+];
+
+const PRICING_CAR = [
+  ["2016–2026","Rp350.000/th","Rp175.000/th"],
+  ["2005–2015","Rp450.000/th","Rp225.000/th"],
+  ["< 2005","Rp500.000/th","Rp250.000/th"],
+];
+const PRICING_MOTOR = [
+  ["2016–2026","Rp200.000/th","Rp100.000/th"],
+  ["2005–2015","Rp300.000/th","Rp150.000/th"],
+  ["< 2005","Rp350.000/th","Rp175.000/th"],
+];
+const PRICING_ELITE = [
+  ["Mobil Elite","Rp600.000/th","Rp700.000/th","Rp750.000/th"],
+  ["Motor Elite","Rp450.000/th","Rp550.000/th","Rp600.000/th"],
+];
+
+const SERVICES = [
+  {name:"1) Unlimited Towing (Layanan Derek)", apa:"Layanan derek/towing kendaraan mogok atau tidak bisa dikendarai ke bengkel/lokasi tujuan terdekat. Mobil Basic: unlimited/tahun, maks. 50 km/kejadian. Motor Basic: 1x/tahun maks. 15 km; Motor Elite: unlimited/tahun maks. 30 km (non-hidrolik).", kapan:"Kendaraan mogok total, kecelakaan ringan yang membuat kendaraan tidak bisa dikendarai, atau butuh evakuasi ke bengkel.", syarat:["Membership aktif & terverifikasi","Kendaraan sesuai data terdaftar","Jarak sesuai limit paket","Jenis towing sesuai standar; biaya tambahan di luar standar"], contoh:"Mobil mogok di tol karena masalah mesin → towing ke bengkel terdekat sesuai limit jarak paket."},
+  {name:"2) Jumper Aki", apa:"Bantuan menghidupkan kembali kendaraan dengan aki soak/lemah menggunakan alat jumper.", kapan:"Kendaraan tidak menyala karena aki lemah, komponen lain normal.", syarat:["Hanya proses jumper, bukan penggantian aki","Aki baru ditanggung customer"], contoh:"Mobil tidak bisa distarter setelah parkir semalaman → dijumper agar menyala kembali."},
+  {name:"3) Ganti Ban", apa:"Bantuan mengganti ban bocor/pecah menggunakan ban serep milik customer.", kapan:"Ban bocor/pecah di jalan dan ada ban serep layak pakai.", syarat:["Customer menyediakan ban serep","Hanya jasa pasang, bukan ban baru"], contoh:"Ban mobil bocor kena paku di tol → dibantu pasang ban serep."},
+  {name:"4) Kirim BBM Darurat", apa:"Pengiriman BBM darurat saat kendaraan kehabisan bahan bakar. Basic: kirim gratis, BBM ditanggung customer. Elite: 5 liter BBM termasuk gratis.", kapan:"Kehabisan bensin/solar di tengah perjalanan.", syarat:["Basic: bayar BBM, gratis ongkos kirim","Elite: 5L gratis, kelebihan ditanggung customer"], contoh:"Motor kehabisan bensin malam hari → dikirim BBM agar sampai SPBU terdekat."},
+  {name:"5) Locksmith (Bantuan Kunci)", apa:"Bantuan darurat saat kunci tertinggal di dalam kendaraan atau bermasalah.", kapan:"Terkunci di luar kendaraan atau kunci macet.", syarat:["Hanya bantuan membuka akses","Tidak termasuk pembuatan kunci baru"], contoh:"Kunci mobil tertinggal di dalam kabin saat mesin menyala → dibantu buka akses."},
+  {name:"6) Ambulance", apa:"Bantuan ambulance untuk kondisi darurat medis terkait insiden di jalan, tersedia di semua paket.", kapan:"Situasi darurat medis yang butuh evakuasi cepat.", syarat:["Mengikuti prosedur medis standar & ketersediaan unit","Untuk kondisi mengancam nyawa, tetap sarankan hubungi 119/112 paralel"], contoh:"Kecelakaan ringan menyebabkan pengendara motor cedera → ambulance dikerahkan."},
+];
+
+const BENEFIT_EXTRA = [
+  ["Antar ke SPKLU","Antar kendaraan listrik ke SPKLU terdekat saat baterai habis di jalan."],
+  ["Safe & Treat","Voucher diskon apresiasi setelah rescue berhasil (Rp100rb Mobil Elite / Rp50rb Motor Elite)."],
+  ["Return to Home","Antar kendaraan ke rumah setelah perbaikan, sesuai limit km paket Elite."],
+  ["Exclusive Experience","Harga spesial & pengalaman eksklusif merchant pilihan — khusus Elite mobil."],
+  ["Out-of-town Protection","Perlindungan luar kota. (Coming Soon)"],
+  ["Recovery Assistance","Rekomendasi bengkel lanjutan sesuai kondisi kendaraan. (Coming Soon)"],
+  ["Invite-only Experience","Akses event/pengalaman khusus member Elite."],
+];
+
+const CHANNELS = {
+  whatsapp:{
+    label:"WhatsApp",
+    flow:["Pesan Masuk","Greeting + Perkenalan Singkat","Identifikasi Kebutuhan","Kirim Info Sesuai SOP (Poster jika soal harga)","Follow Up Jika Belum Direspons","CTA (Download App / Bayar)","Closing"],
+    points:[
+      ["Response Time","First Response maks. 5 menit; balasan lanjutan maks. 5–10 menit; follow up otomatis 1x24 jam (maks. 2x)."],
+      ["Jam Operasional","Aktif sesuai shift CS. Di luar jam operasional gunakan auto-reply & arahkan darurat ke Call Center 24 jam."],
+      ["Follow Up","Ramah namun mengandung urgensi, sertakan recap kebutuhan sebelumnya, akhiri dengan CTA jelas."],
+    ],
+    templates:[
+      ["Auto-Reply (di luar jam operasional)","Halo Kak, terima kasih sudah menghubungi Digiroad 👋\nSaat ini di luar jam operasional Customer Service kami. Tim kami akan membalas pesan Kakak secepatnya di jam operasional berikutnya.\nUntuk kebutuhan bantuan darurat di jalan, silakan hubungi Call Center 24 jam kami ya Kak 🚨"],
+      ["Follow Up","Halo Kak 👋 Melanjutkan chat sebelumnya mengenai Membership Digiroad untuk [jenis kendaraan Kakak].\nPromo 50% untuk Basic masih berlangsung lho Kak. Apakah Kakak mau lanjut daftar sekarang? 😊"],
+      ["Closing","Terima kasih ya Kak sudah menghubungi Digiroad 🙏\nKalau ada pertanyaan lain seputar membership atau bantuan darurat, jangan ragu untuk hubungi kami kembali. Semoga perjalanan Kakak selalu aman! 🚗💨"],
+    ]
+  },
+  instagram:{
+    label:"Instagram DM",
+    flow:["DM/Komentar Masuk","Greeting","Identifikasi Kebutuhan","Jawab Sesuai SOP (Poster jika soal harga)","Arahkan ke WA/Call Center bila perlu","CTA","Closing"],
+    points:[
+      ["CTA","Arahkan download aplikasi; untuk data pribadi/verifikasi arahkan ke WhatsApp resmi demi keamanan data."],
+      ["Escalation","Komplain publik dijawab singkat & sopan di kolom komentar, lanjutkan detail via DM — hindari data pribadi di ruang publik."],
+    ],
+    templates:[
+      ["Balasan Komentar Publik","Halo Kak, terima kasih sudah tertarik dengan Digiroad 😊 Kami sudah kirim DM ya, silakan dicek untuk info lebih lengkap!"],
+      ["Greeting DM","Halo Kak, terima kasih sudah menghubungi Digiroad by Atlas Indonesia 👋\nAda yang bisa kami bantu terkait membership atau layanan roadside assistance kami?"],
+      ["Respons Komplain Publik","Halo Kak, mohon maaf atas ketidaknyamanannya 🙏 Kami sudah kirimkan DM untuk membantu menyelesaikan kendala Kakak lebih lanjut ya."],
+    ]
+  },
+  tiktok:{
+    label:"TikTok DM",
+    flow:["DM/Komentar Masuk","Greeting","Identifikasi Kebutuhan","Jawab Sesuai SOP (Poster jika soal harga)","CTA","Closing"],
+    points:[
+      ["CTA","Arahkan ke link di bio / aplikasi Digiroad; untuk detail/transaksi arahkan ke WhatsApp resmi."],
+    ],
+    templates:[
+      ["Balasan Komentar Video","Halo Kak 👋 Untuk info lengkap promo & cara daftar Digiroad, cek link di bio ya atau chat kami di WhatsApp 😊"],
+      ["Greeting DM","Halo Kak, terima kasih sudah menghubungi Digiroad 👋 Ada yang bisa kami bantu terkait membership roadside assistance kami?"],
+    ]
+  },
+  callcenter:{
+    label:"Call Center",
+    flow:["Opening Script","Verifikasi Customer","Identifikasi Kebutuhan (Info/Rescue/Komplain)","Verifikasi Kendaraan (jika rescue)","Penjelasan Membership / Proses Bantuan","Konfirmasi & Tindak Lanjut","Closing Script"],
+    points:[
+      ["Verifikasi Customer","Nama lengkap, nomor telepon/akun terdaftar, nomor membership (jika sudah member)."],
+      ["Verifikasi Kendaraan","Jenis & tahun kendaraan, nomor polisi, lokasi saat ini (khusus rescue)."],
+    ],
+    templates:[
+      ["Opening Script","Selamat pagi/siang/sore/malam, terima kasih telah menghubungi Digiroad by Atlas Indonesia, dengan [Nama Agent], ada yang bisa saya bantu?"],
+      ["Verifikasi Customer","Baik Bapak/Ibu, sebelumnya boleh saya konfirmasi nama lengkap dan nomor yang terdaftar di aplikasi Digiroad?"],
+      ["Verifikasi Kendaraan (Rescue)","Baik Bapak/Ibu, mohon informasikan jenis dan tahun kendaraan, nomor polisi, serta lokasi Bapak/Ibu saat ini agar tim rescue kami segera meluncur."],
+      ["Penjelasan Membership","Digiroad memiliki dua paket, Basic dan Elite. Basic memberikan perlindungan utama seperti towing, jumper aki, ganti ban, kirim BBM darurat, locksmith, dan ambulance.\nElite mencakup seluruh benefit Basic ditambah benefit eksklusif seperti Return to Home, voucher Safe & Treat, dan Exclusive Experience.\nSaat ini paket Basic sedang promo diskon 50% untuk seluruh kategori kendaraan, Pak/Bu."],
+      ["Closing Script","Baik Bapak/Ibu, apakah ada lagi yang bisa saya bantu?\nTerima kasih telah menghubungi Digiroad by Atlas Indonesia, semoga perjalanan Bapak/Ibu selalu aman. Selamat pagi/siang/sore/malam."],
+    ]
+  }
+};
+
+const FAQ = [
+  {c:"Promo & Harga", q:"Berapa harga sekarang untuk Membership Basic?", a:"Saat ini Membership Basic sedang diskon 50% Kak. Untuk detail harga per kategori kendaraan, kami kirimkan poster resminya ya."},
+  {c:"Promo & Harga", q:"Apakah semua mobil dapat promo?", a:"Iya Kak, promo berlaku untuk semua tahun kendaraan mobil: 2016–2026, 2005–2015, dan di bawah 2005."},
+  {c:"Promo & Harga", q:"Motor dapat promo juga tidak?", a:"Dapat Kak, motor juga termasuk dalam promo diskon 50% untuk Membership Basic."},
+  {c:"Promo & Harga", q:"Promo sampai kapan?", a:"Untuk saat ini promo masih berlangsung Kak. Kami akan infokan jika ada perubahan periode promo."},
+  {c:"Promo & Harga", q:"Apakah promo berlaku untuk paket Elite?", a:"Mohon maaf, promo 50% khusus untuk Membership Basic ya Kak. Elite menggunakan harga normal."},
+  {c:"Promo & Harga", q:"Kenapa harga mobil dan motor berbeda?", a:"Harga disesuaikan dengan kategori kendaraan, jenis risiko, dan kebutuhan penanganan di lapangan Kak."},
+  {c:"Promo & Harga", q:"Kenapa harga kendaraan tahun lama lebih mahal?", a:"Karena kendaraan yang lebih tua memiliki risiko dan kebutuhan penanganan yang biasanya lebih tinggi Kak."},
+  {c:"Promo & Harga", q:"Apakah harga sudah termasuk pajak/biaya admin?", a:"Untuk kepastian rincian biaya, mohon merujuk pada poster resmi dan informasi saat proses pembayaran di aplikasi ya Kak."},
+  {c:"Promo & Harga", q:"Apakah ada biaya perpanjangan tahun depan?", a:"Ya Kak, membership berlaku per tahun dan perlu diperpanjang sesuai harga paket yang berlaku saat itu."},
+  {c:"Promo & Harga", q:"Apakah bisa bayar cicilan?", a:"Untuk saat ini pembayaran dilakukan secara penuh melalui metode yang tersedia di aplikasi ya Kak."},
+  {c:"Layanan & Benefit", q:"Apakah towing benar-benar unlimited?", a:"Untuk mobil Basic, towing unlimited per tahun dengan maksimal 50 km per kejadian Kak."},
+  {c:"Layanan & Benefit", q:"Apakah towing berlaku di seluruh Indonesia?", a:"Layanan Digiroad mencakup 35 provinsi di Indonesia Kak, dengan estimasi rescue ±1 jam khusus area Jabodetabek."},
+  {c:"Layanan & Benefit", q:"Berapa lama waktu tim rescue datang?", a:"Estimasi waktu rescue sekitar ±1 jam untuk area Jabodetabek. Untuk area lain menyesuaikan kondisi lokasi dan akses jalan."},
+  {c:"Layanan & Benefit", q:"Apakah jumper aki termasuk ganti aki baru?", a:"Layanan jumper aki tidak termasuk penggantian aki baru ya Kak, hanya proses menghidupkan kembali kendaraan."},
+  {c:"Layanan & Benefit", q:"Apakah ganti ban termasuk ban baru?", a:"Layanan ganti ban menggunakan ban serep milik kendaraan Kakak, bukan menyediakan ban baru."},
+  {c:"Layanan & Benefit", q:"Apakah BBM darurat gratis?", a:"Untuk Basic, layanan pengiriman gratis namun BBM ditanggung customer. Untuk Elite, 5 liter BBM sudah termasuk gratis dalam layanan."},
+  {c:"Layanan & Benefit", q:"Apakah locksmith bisa buatkan kunci baru jika hilang?", a:"Layanan locksmith tidak termasuk pembuatan kunci baru ya Kak, hanya bantuan membuka akses kendaraan."},
+  {c:"Layanan & Benefit", q:"Apakah layanan ambulance tersedia di semua paket?", a:"Ya Kak, layanan ambulance tersedia baik di paket Basic maupun Elite, mobil maupun motor."},
+  {c:"Layanan & Benefit", q:"Apa bedanya Basic dan Elite?", a:"Basic memberikan perlindungan utama, sedangkan Elite memberikan perlindungan maksimal dengan tambahan benefit eksklusif seperti Return to Home, Safe & Treat, dan Exclusive Experience."},
+  {c:"Layanan & Benefit", q:"Apa itu Return to Home?", a:"Layanan pengantaran kendaraan ke rumah setelah perbaikan selesai, sesuai batas kilometer paket — khusus member Elite."},
+  {c:"Layanan & Benefit", q:"Apa itu Safe & Treat?", a:"Voucher diskon sebagai apresiasi setelah kendaraan berhasil ditangani melalui layanan rescue, khusus member Elite."},
+  {c:"Layanan & Benefit", q:"Apa itu Exclusive Experience?", a:"Akses harga spesial dan pengalaman eksklusif di merchant pilihan seperti Auto Spa & Golf Course, khusus member Elite mobil."},
+  {c:"Layanan & Benefit", q:"Apakah ada layanan untuk kendaraan listrik?", a:"Ada Kak, layanan antar ke SPKLU tersedia saat baterai kendaraan listrik habis di jalan."},
+  {c:"Layanan & Benefit", q:"Apakah Out-of-town Protection sudah tersedia?", a:"Fitur ini masih dalam tahap Coming Soon ya Kak, akan kami infokan begitu sudah aktif."},
+  {c:"Layanan & Benefit", q:"Apakah Recovery Assistance sudah tersedia?", a:"Recovery Assistance masih Coming Soon ya Kak."},
+  {c:"Pendaftaran & Kendaraan", q:"Bagaimana cara daftar Digiroad?", a:"Kakak bisa download aplikasi Digiroad di Play Store/App Store, lalu registrasi dan pilih paket sesuai kebutuhan."},
+  {c:"Pendaftaran & Kendaraan", q:"Kapan membership aktif setelah bayar?", a:"Membership aktif setelah proses verifikasi selesai, estimasi maksimal 3x24 jam setelah pembayaran berhasil."},
+  {c:"Pendaftaran & Kendaraan", q:"Kenapa membership saya belum aktif?", a:"Data kendaraan Kakak kemungkinan masih dalam proses verifikasi. Estimasi maksimal 3x24 jam sejak pembayaran ya Kak."},
+  {c:"Pendaftaran & Kendaraan", q:"Bagaimana kalau kendaraan saya tahun 2008?", a:"Kendaraan tahun 2008 termasuk kategori 2005–2015 ya Kak, sesuai tabel harga yang berlaku."},
+  {c:"Pendaftaran & Kendaraan", q:"Bagaimana kalau kendaraan saya di bawah tahun 2000?", a:"Kendaraan tersebut masuk kategori '< 2005' pada struktur harga kami Kak."},
+  {c:"Pendaftaran & Kendaraan", q:"Bagaimana kalau saya punya motor, apakah bisa daftar?", a:"Bisa Kak, Digiroad menyediakan paket khusus motor, baik Basic maupun Elite."},
+  {c:"Pendaftaran & Kendaraan", q:"Apakah bisa daftar lebih dari satu kendaraan?", a:"Bisa Kak, setiap kendaraan didaftarkan sebagai membership terpisah sesuai kategori dan tahunnya."},
+  {c:"Pendaftaran & Kendaraan", q:"Apakah satu akun bisa untuk beberapa kendaraan?", a:"Satu akun dapat mengelola beberapa kendaraan yang telah didaftarkan dan diverifikasi masing-masing."},
+  {c:"Pendaftaran & Kendaraan", q:"Dokumen apa saja yang dibutuhkan saat daftar?", a:"Umumnya data kendaraan seperti STNK dan data pemilik. Detail lengkap akan diminta melalui aplikasi saat proses pendaftaran."},
+  {c:"Pendaftaran & Kendaraan", q:"Apakah saya perlu upload foto kendaraan?", a:"Kemungkinan diperlukan sesuai proses verifikasi di aplikasi. Ikuti instruksi yang muncul saat pendaftaran ya Kak."},
+  {c:"Pendaftaran & Kendaraan", q:"Bagaimana jika data yang saya masukkan salah?", a:"Kakak bisa mengajukan perbaikan data melalui aplikasi, dan tim kami akan memverifikasi ulang."},
+  {c:"Pendaftaran & Kendaraan", q:"Apakah saya bisa ganti kendaraan yang terdaftar?", a:"Untuk perubahan data kendaraan, silakan hubungi Customer Service kami agar dibantu prosesnya."},
+  {c:"Akun & Aplikasi", q:"Kenapa akun saya tidak bisa login?", a:"Karena ada pembaruan aplikasi, pastikan Kakak sudah menggunakan versi terbaru ya. Untuk login pertama, password-nya adalah nomor telepon yang terdaftar. Setelah masuk, jangan lupa segera ganti password lewat Forgot Password."},
+  {c:"Akun & Aplikasi", q:"Saya lupa password, bagaimana caranya?", a:"Kakak bisa menggunakan fitur Forgot Password di halaman login untuk reset password."},
+  {c:"Akun & Aplikasi", q:"Saya masih Premium, sekarang bagaimana?", a:"Untuk member Premium yang masih aktif, sistem akan otomatis melakukan upgrade ke paket Elite tanpa biaya tambahan. Jadi Bapak/Ibu akan mendapatkan benefit Elite sampai masa aktif berakhir."},
+  {c:"Akun & Aplikasi", q:"Apakah saya perlu bayar tambahan untuk upgrade dari Premium ke Elite?", a:"Tidak Kak, upgrade dilakukan otomatis tanpa biaya tambahan selama masa aktif masih berjalan."},
+  {c:"Akun & Aplikasi", q:"Apakah benefit saya berubah setelah upgrade ke Elite?", a:"Ya Kak, benefit akan mengikuti paket Elite yang saat ini menjadi paket tertinggi di Digiroad."},
+  {c:"Akun & Aplikasi", q:"Kenapa sekarang paketnya cuma Basic & Elite?", a:"Digiroad menyederhanakan paket agar lebih jelas. Basic untuk perlindungan utama di jalan, dan Elite untuk perlindungan maksimal dengan tambahan benefit eksklusif."},
+  {c:"Akun & Aplikasi", q:"Apakah paket Premium saya hilang begitu saja?", a:"Tidak Kak, otomatis di-upgrade menjadi Elite tanpa ada tindakan yang perlu Kakak lakukan."},
+  {c:"Akun & Aplikasi", q:"Aplikasi saya error, harus bagaimana?", a:"Mohon maaf atas ketidaknyamanannya Kak. Coba update ke versi terbaru dan restart aplikasi. Jika masih bermasalah, kami bantu eskalasi ke tim teknis."},
+  {c:"Akun & Aplikasi", q:"Apakah ada cara lain selain aplikasi untuk cek status membership?", a:"Untuk saat ini status membership dapat dicek melalui aplikasi Digiroad ya Kak. Jika butuh bantuan, hubungi Customer Service kami."},
+  {c:"Klaim & Rescue", q:"Bagaimana cara memanggil bantuan darurat?", a:"Kakak bisa membuka aplikasi Digiroad dan pilih menu bantuan darurat, atau hubungi Call Center 24 jam kami."},
+  {c:"Klaim & Rescue", q:"Berapa kali saya bisa menggunakan layanan towing dalam setahun?", a:"Untuk mobil Basic, towing unlimited per tahun (maks. 50 km/kejadian). Untuk motor Basic, 1x per tahun (maks. 15 km); motor Elite unlimited (maks. 30 km)."},
+  {c:"Klaim & Rescue", q:"Apakah ada biaya tambahan saat menggunakan layanan?", a:"Biaya tambahan dapat berlaku untuk hal di luar cakupan standar, misalnya BBM di luar batas gratis (Basic) atau jenis towing khusus di luar standar."},
+  {c:"Klaim & Rescue", q:"Apakah bisa klaim di luar kota domisili kendaraan?", a:"Bisa Kak, layanan berlaku di 35 provinsi cakupan Digiroad, selama sesuai ketentuan paket yang berlaku."},
+  {c:"Klaim & Rescue", q:"Apa yang harus saya lakukan saat kendaraan mogok?", a:"Segera hubungi Call Center Digiroad atau gunakan fitur bantuan darurat di aplikasi, lalu informasikan lokasi dan kondisi kendaraan Kakak."},
+  {c:"Klaim & Rescue", q:"Apakah saya perlu membayar di tempat saat rescue datang?", a:"Untuk layanan yang tercakup dalam paket, tidak ada biaya tambahan. Biaya hanya berlaku untuk hal di luar cakupan paket sesuai penjelasan sebelumnya."},
+  {c:"Klaim & Rescue", q:"Bagaimana jika tim rescue terlambat datang?", a:"Mohon maaf atas ketidaknyamanannya Kak. Estimasi ±1 jam berlaku untuk Jabodetabek; kami akan bantu cek status tim rescue yang menuju lokasi Kakak."},
+  {c:"Komplain & Refund", q:"Saya ingin refund, bagaimana caranya?", a:"Mohon maaf atas ketidaknyamanannya Kak. Permintaan refund akan kami eskalasikan ke tim terkait sesuai kebijakan yang berlaku."},
+  {c:"Komplain & Refund", q:"Kenapa klaim saya ditolak?", a:"Mohon maaf Kak, kami akan cek detail kasus Kakak terlebih dahulu dan menginformasikan alasan penolakan secara jelas."},
+  {c:"Komplain & Refund", q:"Saya kecewa dengan pelayanan rescue, bagaimana?", a:"Kami mohon maaf atas pengalaman kurang menyenangkan ini Kak. Boleh diceritakan detail kejadiannya agar kami bantu tindak lanjuti dan perbaiki?"},
+  {c:"Komplain & Refund", q:"Bagaimana cara mengajukan komplain resmi?", a:"Kakak bisa menyampaikan komplain melalui Call Center, WhatsApp, atau aplikasi Digiroad, dan tim kami akan menindaklanjuti sesuai SOP."},
+  {c:"Verifikasi", q:"Berapa lama proses verifikasi membership?", a:"Estimasi proses verifikasi maksimal 3x24 jam setelah pembayaran berhasil."},
+  {c:"Verifikasi", q:"Data apa saja yang dicek saat verifikasi?", a:"Kesesuaian data kendaraan (jenis, tahun, nomor polisi), data pemilik, kelengkapan dokumen, dan validitas pembayaran."},
+  {c:"Verifikasi", q:"Apa arti status Pending, Verified, dan Rejected?", a:"Pending: masih diproses. Verified: data sesuai dan membership aktif. Rejected: data tidak sesuai/lengkap dan perlu diperbaiki."},
+];
+
+const TEMPLATES = [
+  ["Customer bertanya harga","Halo Kak 👋\nSaat ini seluruh Membership Basic sedang promo 50%.\nBerikut poster harga resminya ya Kak 😊\n(setelah kirim poster)\nJika ada pertanyaan mengenai paket yang paling cocok untuk kendaraan Kakak, dengan senang hati kami bantu."],
+  ["Customer bertanya kapan aktif","Membership akan aktif setelah proses verifikasi kendaraan selesai.\nEstimasi proses verifikasi adalah maksimal 3x24 jam setelah pembayaran berhasil."],
+  ["Customer bertanya promo","Betul Kak 😊\nSaat ini seluruh Membership Basic sedang mendapatkan diskon 50%, termasuk seluruh tahun kendaraan dan motor."],
+  ["Customer bertanya kenapa belum aktif","Saat ini data kendaraan Kakak masih dalam proses verifikasi.\nEstimasi maksimal 3x24 jam setelah pembayaran ya Kak."],
+  ["Customer bertanya cara daftar","Halo Kak, untuk daftar Digiroad caranya mudah 😊\n1. Download aplikasi Digiroad di Play Store/App Store\n2. Registrasi akun & lengkapi data kendaraan\n3. Pilih paket Basic/Elite sesuai kebutuhan\n4. Lakukan pembayaran\nSetelah itu tim kami akan verifikasi data (maks. 3x24 jam) dan membership Kakak aktif!"],
+  ["Customer minta bantuan darurat (rescue)","Baik Kak, mohon tenang ya. Boleh infokan lokasi Kakak saat ini, jenis kendaraan, dan kendala yang dialami?\nTim rescue kami akan segera meluncur ke lokasi Kakak."],
+  ["Customer komplain pelayanan","Mohon maaf atas ketidaknyamanan yang Kakak alami 🙏\nBoleh diceritakan detail kejadiannya agar kami bantu tindak lanjuti dan pastikan hal ini tidak terulang kembali."],
+  ["Customer menanyakan status Premium ke Elite","Untuk member Premium yang masih aktif, sistem akan otomatis melakukan upgrade ke paket Elite tanpa biaya tambahan.\nKakak akan mendapatkan benefit Elite sampai masa aktif berakhir ya 😊"],
+  ["Closing umum","Terima kasih ya Kak sudah menghubungi Digiroad 🙏\nKalau ada pertanyaan lain, jangan ragu untuk hubungi kami kembali. Semoga perjalanan Kakak selalu aman! 🚗💨"],
+];
+
+const DOS = ["Gunakan poster resmi saat menjawab pertanyaan harga/promo","Gunakan bahasa yang sopan, ramah, dan profesional","Balas chat maksimal dalam 5 menit pada jam operasional","Konfirmasi kebutuhan customer sebelum memberi jawaban","Berikan jawaban sesuai SOP & FAQ resmi","Sampaikan SLA verifikasi (3x24 jam) secara konsisten","Tunjukkan empati saat menangani komplain","Eskalasikan kasus di luar kewenangan ke PIC terkait","Jaga kerahasiaan data pribadi customer","Gunakan emoji secukupnya untuk kesan ramah"];
+const DONTS = ["Screenshot Excel atau Google Sheet untuk kirim harga","Menggunakan bahasa kasar atau terlalu informal","Membiarkan chat customer tidak terjawab berlarut-larut","Menebak-nebak kebutuhan atau jawaban tanpa konfirmasi","Memberikan informasi di luar SOP / asumsi pribadi","Menjanjikan aktivasi instan atau lebih cepat dari SLA","Menyela atau terkesan defensif saat customer komplain","Menahan kasus sulit tanpa eskalasi ke tim terkait","Membahas detail data pribadi di ruang publik (komentar, dsb.)","Menggunakan emoji berlebihan hingga terkesan tidak profesional"];
+
+const ESCALATION = [
+  ["Customer Marah/Emosi Tinggi","Nada bicara/chat menunjukkan kemarahan besar, mengancam","Tetap tenang, dengarkan, validasi perasaan, jangan berdebat","Team Leader / Supervisor CS"],
+  ["Komplain Berulang","Masalah sama dilaporkan >1x oleh customer yang sama","Catat riwayat komplain sebelumnya, sampaikan permintaan maaf","Supervisor CS / Quality Assurance"],
+  ["Permintaan Refund","Customer secara eksplisit meminta pengembalian dana","Catat alasan refund, jangan janji apa pun, sampaikan akan diproses","Tim Finance & Supervisor CS"],
+  ["Data Gagal Verifikasi Berulang","Verifikasi ditolak >1x meski sudah diperbaiki","Cek kembali dokumen, sampaikan status transparan","Tim Verifikasi / Operasional"],
+  ["Membership Gagal Aktif > SLA","Sudah lebih dari 3x24 jam, status masih Pending","Minta maaf atas keterlambatan, cek status ke tim internal","Tim Verifikasi / Supervisor CS"],
+  ["Isu Keamanan/Kecelakaan Serius","Insiden melibatkan cedera serius/kondisi darurat kritis","Prioritaskan keselamatan, arahkan ke layanan darurat nasional bila perlu, laporkan segera","Manajemen Operasional / Duty Manager"],
+  ["Isu Teknis Aplikasi","Aplikasi error, tidak bisa login, bug sistem","Kumpulkan detail error (screenshot, device, versi app)","Tim Teknis/IT"],
+  ["Permintaan Media/Pers","Pertanyaan dari media/pihak eksternal terkait isu sensitif","Jangan memberikan pernyataan apa pun","Tim Corporate Communication / Manajemen"],
+];
+
+const KPI = [
+  ["Response Time","Waktu rata-rata membalas setiap pesan customer","Maks. 5–10 menit",85],
+  ["First Response Time (FRT)","Waktu dari pesan pertama masuk hingga dibalas pertama kali","Maks. 5 menit",90],
+  ["Resolution Time","Waktu dari kasus dilaporkan hingga selesai tuntas","Maks. 1x24 jam (umum)",80],
+  ["Customer Satisfaction (CSAT)","Tingkat kepuasan customer terhadap layanan","Min. skor 4.5/5.0",90],
+  ["Conversion Rate","Persentase chat/leads menjadi member terdaftar","Target bulanan Marketing/Sales",70],
+  ["Follow Up Rate","Persentase leads mendapat follow up sesuai SOP","100% leads",95],
+];
+
+const SCENARIOS = [
+  {t:"Darurat & Sudah Member", tag:"Darurat", lines:[["Customer","Halo min, mobil saya mogok di tol nih."],["CS","Halo Kak 👋 Terima kasih telah menghubungi Digiroad by Atlas Indonesia. Baik Kak, mohon maaf mendengarnya. Apakah Kakak sudah terdaftar sebagai Member Digiroad?"],["Customer","Sudah min, saya member Elite."],["CS","Baik Kak, mohon informasikan nama lengkap, nomor HP terdaftar, plat nomor, lokasi saat ini, dan kendala kendaraannya ya, tim rescue kami segera meluncur."]]},
+  {t:"Darurat & Belum Member", tag:"Darurat", lines:[["Customer","Motor saya kehabisan bensin di jalan, tolong dong."],["CS","Baik Kak 😊 Apakah Kakak sudah terdaftar sebagai Member Digiroad, atau belum menjadi member?"],["Customer","Belum min."],["CS","Baik Kak, mohon maaf saat ini layanan darurat kami khusus untuk Member Digiroad. Boleh kami bantu infokan opsi pendaftaran cepat, atau apakah Kakak ingin kami bantu arahkan opsi lain yang tersedia?"]]},
+  {t:"Darurat, Lupa Status Membership", tag:"Darurat", lines:[["Customer","Ban saya bocor, saya lupa apa masih member atau enggak."],["CS","Baik Kak, tidak masalah. Boleh infokan nomor HP yang terdaftar? Biar saya bantu cek status membership Kakak dulu ya."],["Customer","08123456789"],["CS","Baik Kak, saya cek dulu sebentar ya 🙏"]]},
+  {t:"Bertanya Harga", tag:"Non-Darurat", lines:[["Customer","Halo, berapa ya biaya membership Digiroad?"],["CS","Halo Kak 👋 Terima kasih telah menghubungi Digiroad by Atlas Indonesia. Saat ini seluruh Membership Basic sedang promo 50%. Berikut poster harga resminya ya Kak 😊 (poster dikirim)"]]},
+  {t:"Bertanya Promo", tag:"Non-Darurat", lines:[["Customer","Bener ga sih lagi ada promo diskon?"],["CS","Betul Kak 😊 Saat ini seluruh Membership Basic sedang mendapatkan diskon 50%, termasuk seluruh tahun kendaraan dan motor. Berikut poster resminya ya Kak."]]},
+  {t:"Bertanya Cara Aktivasi/Daftar", tag:"Non-Darurat", lines:[["Customer","Cara daftar Digiroad gimana ya min?"],["CS","Halo Kak, untuk daftar Digiroad caranya mudah 😊 1) Download aplikasi Digiroad, 2) Registrasi & lengkapi data kendaraan, 3) Pilih paket Basic/Elite, 4) Lakukan pembayaran. Setelah itu tim kami verifikasi maksimal 3x24 jam."]]},
+  {t:"Bertanya Status Verifikasi", tag:"Non-Darurat", lines:[["Customer","Kok membership saya belum aktif ya, udah bayar dari kemarin."],["CS","Mohon maaf atas ketidaknyamanannya Kak. Saat ini data kendaraan Kakak masih dalam proses verifikasi, estimasi maksimal 3x24 jam setelah pembayaran ya Kak. Mohon ditunggu, nanti kami infokan begitu statusnya berubah 🙏"]]},
+  {t:"Customer Marah (Rescue Lambat)", tag:"Komplain", lines:[["Customer","Udah 2 jam nunggu, tim kalian ga dateng-dateng! Parah pelayanannya!"],["CS","Mohon maaf sebesar-besarnya atas ketidaknyamanan ini Kak 🙏 Saya mengerti Kakak pasti kesal menunggu. Izinkan saya cek langsung status tim rescue yang menuju lokasi Kakak sekarang."],["CS","(setelah dicek) Baik Kak, tim rescue sedang dalam perjalanan dan estimasi tiba dalam 10 menit. Kami akan pastikan ini ditindaklanjuti dan tidak terulang kembali."]]},
+  {t:"Customer Corporate (B2B Atlas)", tag:"B2B", lines:[["Customer","Halo, ini dari PT Sumber Jaya Motor, kami mau tanya soal kerja sama RSA untuk armada dealer kami."],["CS","Halo Kak, terima kasih telah menghubungi Digiroad by Atlas Indonesia 👋 Baik, untuk kebutuhan kerja sama corporate/fleet, boleh saya bantu catat nama perusahaan, nama PIC, dan kebutuhan kerja sama secara singkat? Nanti akan kami teruskan ke tim Business Development kami."]]},
+  {t:"Customer Salah Sambung", tag:"Lain-lain", lines:[["Customer","Halo, ini bengkel Jaya Motor bukan ya?"],["CS","Halo Kak, mohon maaf sebelumnya, ini adalah layanan Digiroad by Atlas Indonesia, bukan bengkel Jaya Motor ya. Apakah ada yang bisa kami bantu terkait layanan roadside assistance atau membership kami?"]]},
+  {t:"Customer Ingin Kerja Sama (Partnership)", tag:"B2B", lines:[["Customer","Min, saya mau ajukan kerja sama sponsorship/partnership nih dengan Digiroad."],["CS","Halo Kak, terima kasih atas ketertarikannya 😊 Boleh dijelaskan singkat jenis kerja sama yang dimaksud? Nanti akan kami teruskan ke tim terkait agar dapat ditindaklanjuti lebih lanjut."]]},
+  {t:"Darurat, Panik & Tak Tahu Nomor Ini Apa", tag:"Darurat", lines:[["Customer","Tolong! Motor saya kecelakaan, ini nomor siapa ya, saya dapat dari internet."],["CS","Baik Kak, tenang dulu ya, kami dari Digiroad by Atlas Indonesia siap membantu 🙏 Apakah Kakak atau orang di sekitar dalam kondisi bahaya? Boleh infokan lokasi Kakak sekarang?"]]},
+  {t:"Bertanya Benefit Elite vs Basic", tag:"Non-Darurat", lines:[["Customer","Bedanya paket Basic sama Elite apa aja min?"],["CS","Basic memberikan perlindungan utama seperti towing, jumper aki, ganti ban, kirim BBM darurat, locksmith, dan ambulance. Elite mencakup semua benefit Basic ditambah Return to Home, voucher Safe & Treat, dan Exclusive Experience, Kak."]]},
+  {t:"Apakah Non-Member Bisa Pakai Layanan Darurat", tag:"Non-Darurat", lines:[["Customer","Kalau saya belum jadi member, bisa dibantu darurat juga ga?"],["CS","Untuk layanan darurat, saat ini prioritas kami adalah Member Digiroad yang aktif ya Kak. Namun kami dengan senang hati bantu infokan opsi pendaftaran cepat jika Kakak berminat."]]},
+  {t:"Follow Up Promo (Belum Checkout)", tag:"Non-Darurat", lines:[["CS","Halo Kak 👋 Melanjutkan chat sebelumnya mengenai Membership Digiroad untuk mobil Kakak. Promo 50% untuk Basic masih berlangsung lho Kak. Apakah Kakak mau lanjut daftar sekarang? 😊"],["Customer","Oh iya lupa, boleh kirim ulang posternya?"],["CS","Siap Kak, berikut poster resminya ya 😊 (poster dikirim)"]]},
+  {t:"Bertanya Apakah Towing Gratis", tag:"Non-Darurat", lines:[["Customer","Towing itu bener-bener gratis ya kalau udah jadi member?"],["CS","Untuk mobil Basic, towing unlimited per tahun dengan maksimal 50 km per kejadian tanpa biaya tambahan Kak, selama masih dalam limit jarak paket."]]},
+  {t:"Customer Minta Refund", tag:"Komplain", lines:[["Customer","Saya mau refund membership saya, ga sesuai ekspektasi."],["CS","Mohon maaf atas ketidaknyamanannya Kak 🙏 Boleh diceritakan detail kendalanya? Permintaan refund akan kami eskalasikan ke tim terkait sesuai kebijakan yang berlaku."]]},
+  {t:"Daftar Banyak Kendaraan (Armada)", tag:"B2B", lines:[["Customer","Kalau mau daftarin 20 mobil operasional kantor gimana ya?"],["CS","Baik Kak, untuk kebutuhan armada/fleet dalam jumlah banyak, ini termasuk kebutuhan corporate ya. Boleh saya catat nama perusahaan dan PIC-nya? Nanti akan kami teruskan ke tim Business Development Atlas untuk penawaran khusus corporate."]]},
+  {t:"Member Premium Lama Tanya Kenapa Jadi Elite", tag:"Non-Darurat", lines:[["Customer","Kok paket saya yang tadinya Premium sekarang jadi Elite?"],["CS","Untuk member Premium yang masih aktif, sistem akan otomatis melakukan upgrade ke paket Elite tanpa biaya tambahan Kak. Kakak akan mendapatkan benefit Elite sampai masa aktif berakhir 😊"]]},
+  {t:"Aplikasi Error Saat Lapor Darurat", tag:"Darurat", lines:[["Customer","Aplikasinya error, saya butuh bantuan darurat tapi ga bisa buka menu rescue!"],["CS","Baik Kak, tenang dulu ya, saya bantu langsung dari sini 🙏 Boleh infokan nama, nomor HP terdaftar, plat nomor, lokasi, dan kendala kendaraan Kakak sekarang? Nanti akan saya proses manual sambil tim teknis kami cek kendala aplikasinya."]]},
+];
+
+const DECISION_TREE = `Customer Masuk
+        │
+        ▼
+    Greeting
+        │
+        ▼
+  Kebutuhan Darurat?
+      │           │
+     YA          TIDAK
+      │           │
+      ▼           ▼
+   Member?   Informasi Membership
+      │           │
+      │           ├── Promo
+      │           ├── Harga
+      │           ├── Benefit
+      │           ├── Cara Daftar
+      │           └── Aktivasi
+      │
+      ▼
+ Verifikasi Data
+      │
+      ▼
+ Dispatch / Rescue`;
+
+/* ============================= RENDER HELPERS ============================= */
+function el(tag, attrs, html){
+  const e = document.createElement(tag);
+  if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]);
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function renderTable(headers, rows){
+  let h = '<div class="table-wrap"><table><thead><tr>' + headers.map(x=>`<th>${x}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r => { h += '<tr>' + r.map(c=>`<td>${c}</td>`).join('') + '</tr>'; });
+  h += '</tbody></table></div>';
+  return h;
+}
+function renderTemplate(title, body){
+  const id = 'tpl_' + Math.random().toString(36).slice(2,9);
+  return `<div class="tpl">
+    <button class="copy-btn" data-copy-target="${id}" onclick="copyTpl(this)">📋 Copy</button>
+    <div class="tpl-title">${esc(title)}</div>
+    <div class="tpl-body" id="${id}">${esc(body)}</div>
+  </div>`;
+}
+function copyTpl(btn){
+  const id = btn.getAttribute('data-copy-target');
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent = "✔ Disalin"; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = "📋 Copy"; btn.classList.remove('copied'); }, 1500);
+  });
+}
+function renderFlow(steps){
+  let h = '<div class="flow">';
+  steps.forEach((s,i)=>{
+    h += `<div class="flow-step">${esc(s)}</div>`;
+    if(i < steps.length-1) h += '<div class="flow-arrow">↓</div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+/* ============================= SECTION RENDERERS ============================= */
+function renderOverview(){
+  return `
+  <h2 class="title">Overview Digiroad</h2>
+  <p class="desc">Ringkasan cepat kondisi layanan, promo yang sedang berjalan, dan value proposition Digiroad by Atlas Indonesia — auto-lifestyle membership dengan Emergency Roadside Assistance 24/7.</p>
+
+  <div class="banner">
+    <div>
+      <div class="bt">🔥 Promo Basic Diskon 50% — Sedang Berlangsung</div>
+      <div class="bd">Berlaku untuk seluruh kategori & tahun kendaraan (mobil & motor). Selalu gunakan harga promo sebagai first response ke customer.</div>
+    </div>
+    <div class="bp">Mobil 2016–2026 mulai Rp175.000/th</div>
+  </div>
+
+  <div class="cards">
+    <div class="card accent"><div class="k">Coverage</div><div class="v">35 <small>Provinsi</small></div></div>
+    <div class="card accent"><div class="k">Estimasi Rescue</div><div class="v">±1 <small>Jam (Jabodetabek)</small></div></div>
+    <div class="card accent"><div class="k">Layanan</div><div class="v">24/7 <small>Termasuk libur nasional</small></div></div>
+    <div class="card accent"><div class="k">SLA Verifikasi</div><div class="v">3x24 <small>Jam</small></div></div>
+  </div>
+
+  <h3 class="h">Value Proposition</h3>
+  <ul class="bl">
+    <li>Perlindungan 24/7 — bantuan darurat di jalan kapan pun dibutuhkan.</li>
+    <li>Satu aplikasi untuk semua kebutuhan — RSA, status membership, dan lifestyle benefit.</li>
+    <li>Jaringan luas — coverage layanan di 35 provinsi di Indonesia.</li>
+    <li>Respons cepat — estimasi waktu rescue ±1 jam untuk area Jabodetabek.</li>
+    <li>Value tambahan — lifestyle benefit seperti voucher & pengalaman eksklusif untuk member Elite.</li>
+  </ul>
+
+  <h3 class="h">Layanan Utama</h3>
+  <div class="pillbar">
+    ${["Unlimited Towing","Jumper Aki","Ganti Ban","Kirim BBM Darurat","Locksmith","Ambulance"].map(s=>`<div class="pill">🔧 ${s}</div>`).join('')}
+  </div>
+
+  <h3 class="h">ATLAS (B2B) vs Digiroad (B2C) — Satu Nomor, Dua Jenis Customer</h3>
+  <p class="body-text">Nomor WhatsApp Digiroad saat ini juga merupakan nomor layanan Atlas Indonesia (bisnis legacy B2B). CS akan menerima dua jenis customer berbeda pada satu nomor yang sama — <b>wajib lakukan screening kebutuhan terlebih dahulu</b> sebelum menanyakan status membership. Lihat detail lengkap di tab <a href="#" onclick="nav('screening');return false;" style="color:var(--red);font-weight:600;">Customer Screening</a>.</p>
+  ${renderTable(["Aspek","Atlas (Legacy – B2B)","Digiroad (B2C)"],[
+    ["Fokus","Brand otomotif & dealer / korporat","Direct to consumer (perorangan)"],
+    ["Layanan","Emergency Roadside Assistance (RSA) saja","RSA + Lifestyle Benefits via aplikasi mobile"],
+    ["Membership","Diberikan oleh dealer/brand/perusahaan","Daftar, upgrade, redeem benefit langsung oleh user"],
+  ])}
+  `;
+}
+
+function renderCampaign(){
+  let h = `
+  <h2 class="title">Campaign & Struktur Harga</h2>
+  <p class="desc">Promo yang sedang berjalan beserta syarat, ketentuan, dan struktur harga resmi. Gunakan halaman ini sebagai acuan sebelum mengirim info harga ke customer — namun tetap kirim poster resmi campaign, jangan screenshot Excel/Sheet.</p>
+
+  <div class="banner">
+    <div><div class="bt">Membership Basic — Diskon 50%</div><div class="bd">Berlaku untuk mobil 2016–2026, 2005–2015, &lt;2005, dan motor (semua tahun). Elite TIDAK termasuk promo.</div></div>
+  </div>
+
+  <h3 class="h">🚗 Harga Mobil</h3>
+  ${renderTable(["Tahun Kendaraan","Harga Normal","Harga Promo (50%)"], PRICING_CAR)}
+  <h3 class="h">🏍 Harga Motor</h3>
+  ${renderTable(["Tahun Kendaraan","Harga Normal","Harga Promo (50%)"], PRICING_MOTOR)}
+  <p class="footnote">Harga motor promo dihitung otomatis 50% dari price list standar. Selalu cocokkan dengan poster campaign resmi terbaru dari tim Marketing.</p>
+
+  <h3 class="h">Harga Normal Elite (Tidak Promo)</h3>
+  ${renderTable(["Kategori","2016–2026","2005–2015","< 2005"], PRICING_ELITE)}
+
+  <h3 class="h">Syarat & Ketentuan Promo</h3>
+  <ul class="bl">
+    <li>Berlaku untuk pembelian Membership Basic baru.</li>
+    <li>Berlaku untuk seluruh kategori & tahun kendaraan (mobil & motor).</li>
+    <li>Harga final mengikuti poster campaign resmi yang berlaku saat transaksi.</li>
+    <li>Promo dapat berubah sewaktu-waktu — selalu cek update terbaru.</li>
+    <li>Gunakan harga promo sebagai first response, jangan sebut harga normal sebagai harga utama.</li>
+  </ul>
+
+  <h3 class="h">SOP Pengiriman Harga</h3>
+  <p class="body-text">Jika customer bertanya <b>harga / biaya / paket / promo / membership / price</b>, Admin WA/DM WAJIB mengirimkan poster resmi campaign terlebih dahulu, baru menjelaskan detail jika ada pertanyaan lanjutan.</p>
+  <div class="cards">
+    <div class="card"><div class="k">✅ Selalu</div><div style="font-size:13px;margin-top:6px;">Kirim Poster Official Campaign</div></div>
+    <div class="card"><div class="k">❌ Jangan</div><div style="font-size:13px;margin-top:6px;">Screenshot Excel / Google Sheet / ketik ulang harga panjang</div></div>
+  </div>
+
+  <h3 class="h">FAQ Khusus Promo</h3>
+  `;
+  [
+    ["Apakah promo berlaku untuk semua tahun kendaraan?","Ya Kak, promo 50% berlaku untuk semua tahun kendaraan, baik mobil 2016–2026, 2005–2015, maupun di bawah 2005, termasuk motor."],
+    ["Apakah promo berlaku untuk paket Elite?","Mohon maaf Kak, promo 50% saat ini hanya berlaku untuk Membership Basic. Paket Elite menggunakan harga normal."],
+    ["Apakah benefit yang didapat berkurang karena harga promo?","Tidak Kak, benefit yang didapatkan tetap sama seperti benefit reguler Basic sesuai kategori kendaraan Kakak."],
+  ].forEach(([q,a])=>{ h += `<div class="tpl"><div class="tpl-title">Q: ${esc(q)}</div><div class="tpl-body">A: ${esc(a)}</div></div>`; });
+  return h;
+}
+
+function renderProduct(){
+  let h = `
+  <h2 class="title">Product Knowledge</h2>
+  <p class="desc">Penjelasan detail masing-masing layanan utama Digiroad agar seluruh tim dapat menjelaskan dengan konsisten dan akurat kepada customer.</p>
+  `;
+  SERVICES.forEach(s=>{
+    h += `<h3 class="h">${esc(s.name)}</h3>
+    <p class="body-text"><b>Apa layanan ini:</b> ${esc(s.apa)}</p>
+    <p class="body-text"><b>Kapan digunakan:</b> ${esc(s.kapan)}</p>
+    <h4 class="hs">Syarat</h4>
+    <ul class="bl">${s.syarat.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+    <p class="body-text"><b>Contoh kasus:</b> ${esc(s.contoh)}</p>`;
+  });
+  h += `<h3 class="h">Benefit Tambahan (Khusus Elite & Layanan Lain)</h3>`;
+  h += renderTable(["Benefit","Penjelasan"], BENEFIT_EXTRA);
+  return h;
+}
+
+function renderScreening(){
+  let h = `
+  <h2 class="title">Customer Screening & Conversation Flow</h2>
+  <p class="desc">Nomor layanan Digiroad juga digunakan oleh customer Atlas Indonesia (B2B). Setiap chat WAJIB melalui proses screening sebelum CS menjawab atau menanyakan status membership.</p>
+
+  <div class="banner">
+    <div><div class="bt">⚠️ Aturan Wajib</div><div class="bd">CS TIDAK BOLEH bertanya "Apakah Bapak/Ibu Member Digiroad?" sebagai pertanyaan pertama. Lakukan screening kebutuhan dulu.</div></div>
+  </div>
+
+  <h3 class="h">Alur Wajib Screening (6 Langkah)</h3>
+  ${renderFlow(["STEP 1 — Greeting","STEP 2 — Identifikasi Darurat / Non-Darurat","STEP 3 — Jika Darurat: Tanyakan Status Member","STEP 4 — Jika Member: Verifikasi Data & Dispatch","STEP 5 — Jika Belum Member: Bantu & Jelaskan Opsi","STEP 6 — Jika Hanya Info: Jawab Langsung, Tanpa Tanya Status Member"])}
+
+  <div class="cards" style="margin-bottom:20px;">
+    <div class="card"><div class="k">A. Layanan Darurat</div><div style="font-size:12.5px;margin-top:6px;line-height:1.6;">Towing · Mobil mogok · Ban bocor · Kehabisan BBM · Aki soak · Locksmith · Ambulance</div></div>
+    <div class="card"><div class="k">B. Kebutuhan Non-Darurat</div><div style="font-size:12.5px;margin-top:6px;line-height:1.6;">Harga · Membership · Promo · Cara daftar · Aktivasi · Pembayaran · Benefit · Kerja sama · Info layanan</div></div>
+  </div>
+
+  <h3 class="h">Decision Tree Percakapan</h3>
+  <div class="dtree">${esc(DECISION_TREE)}</div>
+
+  <h3 class="h">Template Tiap Step</h3>
+  ${renderTemplate("Step 1 — Greeting","Halo Kak 👋\nTerima kasih telah menghubungi Digiroad by Atlas Indonesia.\nAda yang bisa kami bantu hari ini? 😊")}
+  ${renderTemplate("Step 2 — Identifikasi Kebutuhan","Baik Kak 😊\nApakah saat ini Kakak sedang membutuhkan layanan darurat, atau ingin bertanya mengenai membership maupun informasi Digiroad?")}
+  ${renderTemplate("Step 3 — Verifikasi Status Member (khusus darurat)","Baik Kak.\nApakah Kakak sudah terdaftar sebagai Member Digiroad, atau belum menjadi member?")}
+  ${renderTemplate("❌ Dilarang sebagai pertanyaan pembuka","\"Apakah Bapak/Ibu Member Digiroad?\"\n(Dilarang karena nomor ini juga digunakan customer Atlas Indonesia/B2B sehingga dapat membingungkan pelanggan yang menghubungi untuk keperluan lain.)")}
+
+  <h3 class="h">Contoh Percakapan (20 Skenario)</h3>
+  <div class="scenario-controls">
+    <select id="scenarioFilter" onchange="renderScenarioGrid()">
+      <option value="Semua">Semua kategori</option>
+      <option value="Darurat">Darurat</option>
+      <option value="Non-Darurat">Non-Darurat</option>
+      <option value="B2B">B2B / Corporate</option>
+      <option value="Komplain">Komplain</option>
+      <option value="Lain-lain">Lain-lain</option>
+    </select>
+  </div>
+  <div class="scenario-grid" id="scenarioGrid"></div>
+  <div id="scenarioChat"></div>
+  `;
+  return h;
+}
+
+function renderChannels(){
+  let tabs = '<div class="tabs">';
+  let panels = '';
+  Object.keys(CHANNELS).forEach((key,i)=>{
+    const c = CHANNELS[key];
+    tabs += `<div class="tab-btn ${i===0?'active':''}" data-tab="${key}" onclick="switchTab('${key}')">${esc(c.label)}</div>`;
+    panels += `<div class="tab-panel ${i===0?'active':''}" id="panel-${key}">
+      <h3 class="h">Flow ${esc(c.label)}</h3>
+      ${renderFlow(c.flow)}
+      ${c.points.map(([k,v])=>`<h4 class="hs">${esc(k)}</h4><p class="body-text">${esc(v)}</p>`).join('')}
+      <h4 class="hs">Template Siap Pakai</h4>
+      ${c.templates.map(([t,b])=>renderTemplate(t,b)).join('')}
+    </div>`;
+  });
+  tabs += '</div>';
+  return `
+  <h2 class="title">SOP per Channel</h2>
+  <p class="desc">Flow, target respons, dan template siap pakai untuk masing-masing channel: WhatsApp, Instagram DM, TikTok DM, dan Call Center.</p>
+  ${tabs}
+  ${panels}
+  `;
+}
+function switchTab(key){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===key));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+key));
+}
+
+function renderVerification(){
+  return `
+  <h2 class="title">Verifikasi Membership & Pengiriman Poster</h2>
+  <p class="desc">SOP setelah customer melakukan pembayaran, dan aturan wajib pengiriman poster harga resmi.</p>
+
+  <h3 class="h">Langkah Setelah Pembayaran</h3>
+  ${renderFlow(["Customer Melakukan Pembayaran","Data Kendaraan Masuk ke Sistem","Tim Verifikasi Mengecek Data","Status: Pending → Verified / Rejected","Membership Aktif (jika Verified)","Notifikasi ke Customer"])}
+
+  <div class="cards">
+    <div class="card accent"><div class="k">SLA Verifikasi</div><div class="v">Maks. 3x24 <small>Jam</small></div></div>
+  </div>
+
+  <h3 class="h">Status Verifikasi</h3>
+  ${renderTable(["Status","Arti","Yang Disampaikan ke Customer"],[
+    ["Pending","Data sedang dicek tim verifikasi","Sedang diproses, estimasi maksimal 3x24 jam."],
+    ["Verified","Data sesuai, membership aktif","Membership aktif dan siap digunakan sesuai benefit paket."],
+    ["Rejected","Data tidak sesuai/lengkap","Sampaikan alasan penolakan dengan jelas & arahkan untuk melengkapi data."],
+  ])}
+
+  <h3 class="h">SOP Pengiriman Poster Harga</h3>
+  <p class="body-text">Wajib dikirim jika customer bertanya: harga, biaya, paket, promo, membership, atau price. Jangan gunakan screenshot Excel/Sheet atau mengetik ulang harga panjang.</p>
+  ${renderFlow(["Customer Bertanya Harga/Promo/Paket","Kirim Poster Official Campaign","Tunggu Respons Customer","Jelaskan Detail Jika Ada Pertanyaan Lanjutan","Arahkan ke CTA (Daftar/Bayar)"])}
+  `;
+}
+
+function renderFAQPage(){
+  return `
+  <h2 class="title">FAQ — Frequently Asked Questions</h2>
+  <p class="desc">${FAQ.length} pertanyaan yang paling sering diajukan customer beserta jawaban standar. Gunakan search bar di atas atau filter kategori di bawah.</p>
+  <div class="faq-controls" id="faqChips"></div>
+  <div class="faq-count" id="faqCount"></div>
+  <div id="faqList"></div>
+  `;
+}
+let faqCategoryFilter = "Semua";
+function renderFAQBody(){
+  const cats = ["Semua", ...Array.from(new Set(FAQ.map(f=>f.c)))];
+  const chipsEl = document.getElementById('faqChips');
+  if(chipsEl){
+    chipsEl.innerHTML = cats.map(c=>`<div class="chip ${c===faqCategoryFilter?'active':''}" onclick="setFaqFilter('${c.replace(/'/g,"\\'")}')">${c}</div>`).join('');
+  }
+  const list = FAQ.filter(f=> faqCategoryFilter==="Semua" || f.c===faqCategoryFilter);
+  document.getElementById('faqCount').textContent = list.length + ' pertanyaan ditampilkan';
+  document.getElementById('faqList').innerHTML = list.map((f,i)=>`
+    <div class="faq-item" id="faqitem-${i}">
+      <div class="faq-q" onclick="toggleFaq(${i})"><span>${esc(f.q)}</span><span class="arrow">▾</span></div>
+      <div class="faq-a"><div class="faq-a-inner">${esc(f.a)}</div></div>
+    </div>`).join('');
+}
+function setFaqFilter(c){ faqCategoryFilter = c; renderFAQBody(); }
+function toggleFaq(i){ document.getElementById('faqitem-'+i).classList.toggle('open'); }
+
+function renderTemplatesPage(){
+  return `
+  <h2 class="title">Template Jawaban Cepat</h2>
+  <p class="desc">Template siap copy-paste untuk mempercepat respons dan menjaga konsistensi jawaban di seluruh channel. Klik tombol "Copy" untuk menyalin ke clipboard.</p>
+  ${TEMPLATES.map(([t,b])=>renderTemplate(t,b)).join('')}
+  `;
+}
+
+function renderDonts(){
+  return `
+  <h2 class="title">Do & Don't</h2>
+  <p class="desc">Panduan cepat perilaku yang dianjurkan dan dilarang saat berkomunikasi dengan customer.</p>
+  <div class="table-wrap"><table><thead><tr><th>✅ DO</th><th>❌ DON'T</th></tr></thead><tbody>
+  ${DOS.map((d,i)=>`<tr><td>${esc(d)}</td><td>${esc(DONTS[i]||'')}</td></tr>`).join('')}
+  </tbody></table></div>
+  `;
+}
+
+function renderEscalation(){
+  return `
+  <h2 class="title">Escalation Matrix</h2>
+  <p class="desc">Panduan eskalasi untuk kasus yang tidak dapat diselesaikan langsung oleh Frontliner.</p>
+  ${renderTable(["Situasi","Trigger","Tindakan Frontliner","Eskalasi ke (PIC)"], ESCALATION)}
+  `;
+}
+
+function renderKPI(){
+  let h = `
+  <h2 class="title">KPI Call Center & Customer Service</h2>
+  <p class="desc">Target kualitas layanan sebagai acuan standar tim Call Center & Customer Service.</p>
+  <div class="kpi-grid">
+  `;
+  KPI.forEach(([name,def,target,pct])=>{
+    h += `<div class="gauge-card">
+      <div class="gk">${esc(name)}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <div class="gt"><b>Target:</b> ${esc(target)}</div>
+      <div class="gt" style="margin-top:2px;">${esc(def)}</div>
+    </div>`;
+  });
+  h += `</div><p class="footnote">Target dapat disesuaikan lebih lanjut oleh manajemen Call Center & Customer Service sesuai kebutuhan bisnis. Persentase bar bersifat ilustratif terhadap tingkat kepatuhan target.</p>`;
+  return h;
+}
+
+/* ============================= SCENARIO GRID ============================= */
+function renderScenarioGrid(){
+  const filter = document.getElementById('scenarioFilter') ? document.getElementById('scenarioFilter').value : "Semua";
+  const grid = document.getElementById('scenarioGrid');
+  if(!grid) return;
+  const list = SCENARIOS.filter(s => filter==="Semua" || s.tag===filter);
+  grid.innerHTML = list.map((s)=>{
+    const idx = SCENARIOS.indexOf(s);
+    return `<div class="scenario-card" onclick="showScenario(${idx})"><span class="n">${idx+1}.</span>${esc(s.t)} <span class="badge ${s.tag==='B2B'?'b2b':'b2c'}" style="margin-left:6px;">${esc(s.tag)}</span></div>`;
+  }).join('');
+  const chatDiv = document.getElementById('scenarioChat');
+  if(chatDiv) chatDiv.innerHTML = '';
+}
+function showScenario(idx){
+  const s = SCENARIOS[idx];
+  const chatDiv = document.getElementById('scenarioChat');
+  chatDiv.innerHTML = `<div class="chatbox"><h4>${esc(idx+1)}. ${esc(s.t)} <span class="badge ${s.tag==='B2B'?'b2b':'b2c'}">${esc(s.tag)}</span></h4>
+    ${s.lines.map(([who,text])=>`<div class="bubble ${who==='CS'?'cs':'customer'}"><div class="who">${who}</div>${esc(text)}</div>`).join('')}
+  </div>`;
+  if(chatDiv.scrollIntoView) chatDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+/* ============================= NAV / ROUTER ============================= */
+const SECTION_RENDER = {
+  overview: renderOverview,
+  campaign: renderCampaign,
+  product: renderProduct,
+  screening: renderScreening,
+  channels: renderChannels,
+  verification: renderVerification,
+  faq: renderFAQPage,
+  templates: renderTemplatesPage,
+  donts: renderDonts,
+  escalation: renderEscalation,
+  kpi: renderKPI,
+};
+const TITLES = {
+  overview:"Overview", campaign:"Campaign & Harga", product:"Product Knowledge", screening:"Customer Screening & Conversation Flow",
+  channels:"SOP per Channel", verification:"Verifikasi & Poster Harga", faq:"FAQ", templates:"Template Jawaban Cepat",
+  donts:"Do & Don't", escalation:"Escalation Matrix", kpi:"KPI Call Center & Customer Service"
+};
+
+function buildNav(){
+  const navEl = document.getElementById('navList');
+  navEl.innerHTML = '';
+  NAV.forEach(group=>{
+    const label = el('div',{class:'nav-group-label'}, group.group);
+    navEl.appendChild(label);
+    group.items.forEach(item=>{
+      const it = el('div',{class:'nav-item', 'data-id':item.id}, `<span class="ic">${item.icon}</span><span>${item.label}</span>`);
+      it.onclick = ()=> nav(item.id);
+      navEl.appendChild(it);
+    });
+  });
+}
+
+function nav(id){
+  document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', n.dataset.id===id));
+  document.getElementById('pageTitle').textContent = TITLES[id] || id;
+  const content = document.getElementById('content');
+  content.innerHTML = `<div class="section active">${SECTION_RENDER[id]()}</div>`;
+  if(id==='faq'){ renderFAQBody(); }
+  if(id==='screening'){ renderScenarioGrid(); }
+  window.scrollTo(0,0);
+  const sb = document.getElementById('sidebar');
+  if(window.innerWidth <= 880) sb.classList.remove('open');
+}
+
+/* ============================= SEARCH ============================= */
+function buildSearchIndex(){
+  const idx = [];
+  FAQ.forEach(f=> idx.push({tag:'FAQ · '+f.c, q:f.q, a:f.a, go:'faq'}));
+  TEMPLATES.forEach(([t,b])=> idx.push({tag:'Template', q:t, a:b.replace(/\\n/g,' '), go:'templates'}));
+  SCENARIOS.forEach(s=> idx.push({tag:'Skenario · '+s.tag, q:s.t, a:s.lines.map(l=>l[1]).join(' '), go:'screening'}));
+  SERVICES.forEach(s=> idx.push({tag:'Product Knowledge', q:s.name, a:s.apa, go:'product'}));
+  return idx;
+}
+let SEARCH_INDEX = [];
+function doSearch(query){
+  const box = document.getElementById('searchResults');
+  if(!query || query.trim().length < 2){ box.classList.remove('show'); box.innerHTML=''; return; }
+  const q = query.toLowerCase();
+  const results = SEARCH_INDEX.filter(item => (item.q+' '+item.a).toLowerCase().includes(q)).slice(0,12);
+  if(results.length===0){
+    box.innerHTML = '<div class="sr-empty">Tidak ada hasil untuk "'+esc(query)+'"</div>';
+  } else {
+    box.innerHTML = results.map(r=>`<div class="sr-item" onclick="nav('${r.go}');document.getElementById('searchResults').classList.remove('show');document.getElementById('searchInput').value='';">
+      <div class="sr-tag">${esc(r.tag)}</div>
+      <div class="sr-q">${esc(r.q)}</div>
+      <div class="sr-a">${esc(r.a)}</div>
+    </div>`).join('');
+  }
+  box.classList.add('show');
+}
+
+/* ============================= INIT ============================= */
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildNav();
+  SEARCH_INDEX = buildSearchIndex();
+  nav('overview');
+  document.getElementById('searchInput').addEventListener('input', (e)=> doSearch(e.target.value));
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.search-wrap')) document.getElementById('searchResults').classList.remove('show');
+  });
+  document.getElementById('menuBtn').addEventListener('click', ()=> document.getElementById('sidebar').classList.toggle('open'));
+});
+</script>
+</body>
+</html>
